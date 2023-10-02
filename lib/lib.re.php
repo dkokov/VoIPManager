@@ -409,6 +409,7 @@ function re_get_all_balances($end)
 function re_get_all_balances_v2($end,$bacc_like)
 {
     $balances = '';
+
     $query = "SELECT bacc.username,bal.id,bal.amount,bal.start_date,bal.end_date,bal.active 
               from balance as bal,billing_account as bacc 
               where bacc.id = bal.billing_account_id and 
@@ -417,10 +418,10 @@ function re_get_all_balances_v2($end,$bacc_like)
               bacc.username like '".$bacc_like."' 
               order by bacc.id";
     $res = re_query($query);
+
     $i=0;
-    while($row = pg_fetch_row($res))
-    {
-	$balances[$i] = array(
+    while($row = pg_fetch_row($res)) {
+	    $balances[$i] = array(
 			'BillingAccount' => $row[0],
 			'UserBalanceID'  => $row[1],
 			'Amount'         => $row[2],
@@ -428,8 +429,9 @@ function re_get_all_balances_v2($end,$bacc_like)
 			'EndDate'        => $row[4],
 			'BalanceStatus'  => $row[5]
 			);
-	$i++;
+	    $i++;
     }
+
     return $balances;
 }
 
@@ -438,13 +440,11 @@ function re_get_bal_last_updates($bal_id)
     $arr = "";
 
     $sql = "select last_update,last_update_flag from balance where id = ".$bal_id."";
-
     $res = re_query($sql);
 
-    while($row = pg_fetch_row($res))
-    {
-	$arr['last'] = $row[0];
-	$arr['lflag'] = $row[1];
+    while($row = pg_fetch_row($res)) {
+	    $arr['last'] = $row[0];
+	    $arr['lflag'] = $row[1];
     }
 
     return $arr;
@@ -457,18 +457,15 @@ function re_get_bill_file($bal_id)
     $sql = "SELECT username,amount,start_date,end_date,active 
 	    from billing_account,balance where balance.id = ".$bal_id." and 
 	    billing_account.id = balance.billing_account_id and active = 't';";
-
     $res = re_query($sql);
 
     while($row = pg_fetch_array($res)) {
-	$arr['bacc'] = $row[0];
-	$arr['amount'] = $row[1];
-	$arr['start'] = $row[2];
-	$arr['end'] = $row[3];
-	$arr['active'] = $row[4];
+	    $arr['bacc'] = $row[0];
+	    $arr['amount'] = $row[1];
+	    $arr['start'] = $row[2];
+	    $arr['end'] = $row[3];
+	    $arr['active'] = $row[4];
     }
-
-//    hpvp_put_syslog(LOG_N,"debug: ".$arr['bacc']);
 
     return $arr;
 }
@@ -477,15 +474,16 @@ function re_get_rated_calls_report($balance_id)
 {
     $arr = "";
     $billing_account_id = 0;
+
     $sql = "SELECT bal.billing_account_id,bal.start_date,bal.end_date from balance as bal where id = ".$balance_id."";
     $res = re_query($sql);
-    while($row = pg_fetch_array($res))
-    {
-	$billing_account_id = $row[0];
-	$start_date = $row[1];
-	$end_date = $row[2];
+
+    while($row = pg_fetch_array($res)) {
+	    $billing_account_id = $row[0];
+	    $start_date = $row[1];
+	    $end_date = $row[2];
     }
-    
+
     $sql = "SELECT cdrs.start_ts,cdrs.calling_number,cdrs.called_number,rt.call_price,rt.call_billsec 
             from rating as rt,cdrs 
             where rt.call_id = cdrs.id and 
@@ -493,17 +491,21 @@ function re_get_rated_calls_report($balance_id)
             cdrs.start_ts >= '".$start_date."' and 
             cdrs.start_ts < '".$end_date."' order by cdrs.start_ts";
     $res = re_query($sql);
+
     $i=0;
-    while($row = pg_fetch_array($res))
-    {
-	$arr[$i]['ts']      = $row[0];
-	$arr[$i]['clg']     = $row[1];
-	$arr[$i]['cld']     = $row[2];
-	if($row[3] > 0) $arr[$i]['cprice']  = $row[3];
-	else $arr[$i]['cprice'] = 0;
-	$arr[$i]['billsec'] = $row[4];
-	$i++;
+    while($row = pg_fetch_array($res)) {
+	    $arr[$i]['ts']      = $row[0];
+	    $arr[$i]['clg']     = $row[1];
+	    $arr[$i]['cld']     = $row[2];
+
+        if($row[3] > 0) $arr[$i]['cprice']  = $row[3];
+	    else $arr[$i]['cprice'] = 0;
+
+        $arr[$i]['billsec'] = $row[4];
+
+        $i++;
     }
+
     return $arr;
 }
 
@@ -516,16 +518,15 @@ function re_get_rated_calls_report_2($balance_id)
             where bal.id = ".$balance_id." and 
             bacc.id = bal.billing_account_id and 
             bacc.currency_id = cr.id";
-
     $res = re_query($sql);
-    while($row = pg_fetch_array($res))
-    {
-	$bill['billing_account_id'] = $row[0];
-	$bill['start_date'] = $row[1];
-	$bill['end_date'] = $row[2];
-	$bill['amount'] = $row[3];
-	$bill['bacc'] = $row[4];
-	$bill['curr'] = $row[5];
+
+    while($row = pg_fetch_array($res)) {
+        $bill['billing_account_id'] = $row[0];
+        $bill['start_date'] = $row[1];
+        $bill['end_date'] = $row[2];
+        $bill['amount'] = $row[3];
+        $bill['bacc'] = $row[4];
+        $bill['curr'] = $row[5];
     }
     
     $sql = "SELECT cdrs.start_ts,cdrs.calling_number,cdrs.called_number,rt.call_price,rt.call_billsec,tr.name 
@@ -542,17 +543,18 @@ function re_get_rated_calls_report_2($balance_id)
 
     $mins = 0;
     $i=0;
-    while($row = pg_fetch_array($res))
-    {
-	$arr[$i]['ts']      = $row[0];
-	$arr[$i]['clg']     = $row[1];
-	$arr[$i]['cld']     = $row[2];
-	if($row[3] > 0) $arr[$i]['cprice']  = $row[3];
-	else $arr[$i]['cprice'] = 0;
-	$arr[$i]['billsec'] = $row[4];
-	$mins = $mins + ($arr[$i]['billsec']/60);
-	$arr[$i]['tariff'] = $row[5];
-	$i++;
+    while($row = pg_fetch_array($res)) {
+        $arr[$i]['ts']      = $row[0];
+        $arr[$i]['clg']     = $row[1];
+        $arr[$i]['cld']     = $row[2];
+
+        if($row[3] > 0) $arr[$i]['cprice']  = $row[3];
+        else $arr[$i]['cprice'] = 0;
+
+        $arr[$i]['billsec'] = $row[4];
+        $mins = $mins + ($arr[$i]['billsec']/60);
+        $arr[$i]['tariff'] = $row[5];
+        $i++;
     }
 
     $bill['calls'] = $arr;
@@ -564,19 +566,21 @@ function re_get_rated_calls_report_2($balance_id)
 function re_get_operators()
 {
     $arr = '';
+
     $query = "select id,username,cdr_server_id 
               from billing_account 
               where leg = 'a+b' 
               order by id;";
     $res = re_query($query);
+
     $i=0;
-    while($row = pg_fetch_row($res))
-    {
-	$arr[$i]['id'] = $row[0];
-	$arr[$i]['username'] = $row[1];
-	$arr[$i]['cdr_server_id'] = $row[2];
-	$i++;
+    while($row = pg_fetch_row($res)) {
+	    $arr[$i]['id'] = $row[0];
+	    $arr[$i]['username'] = $row[1];
+	    $arr[$i]['cdr_server_id'] = $row[2];
+	    $i++;
     }
+
     return $arr;
 }
 
@@ -590,15 +594,16 @@ function re_get_operator_reports($bacc_id)
     $res = re_query($sql);
 
     $i=0;
-    while($row = pg_fetch_row($res))
-    {
-	$arr[$i]['id'] = $row[0];
-	$arr[$i]['start_period'] = $row[1];
-	$arr[$i]['end_period']   = $row[2];
-	$arr[$i]['leg'] = $row[3];
-	$arr[$i]['ts']  = $row[4];
-	$i++;
+    while($row = pg_fetch_row($res)) {
+	    $arr[$i]['id'] = $row[0];
+	    $arr[$i]['start_period'] = $row[1];
+	    $arr[$i]['end_period']   = $row[2];
+	    $arr[$i]['leg'] = $row[3];
+	    $arr[$i]['ts']  = $row[4];
+
+        $i++;
     }
+
     return $arr;
 }
 
@@ -617,15 +622,16 @@ function re_get_operator_traffic($report_id)
     $res = re_query($sql);
 
     $i=0;
-    while($row = pg_fetch_row($res))
-    {
-	$arr[$i]['count']   = $row[0];
-	$arr[$i]['amount']  = $row[1];
-	$arr[$i]['mins']    = $row[2];
-	$arr[$i]['prefix']  = $row[3];
-	$arr[$i]['tariff']  = $row[4];
-	$i++;
+    while($row = pg_fetch_row($res)) {
+	    $arr[$i]['count']   = $row[0];
+	    $arr[$i]['amount']  = $row[1];
+	    $arr[$i]['mins']    = $row[2];
+	    $arr[$i]['prefix']  = $row[3];
+	    $arr[$i]['tariff']  = $row[4];
+
+        $i++;
     }
+
     return $arr;
 }
 
@@ -639,21 +645,23 @@ function re_get_operator_traffic_brief($report_id)
     $res = re_query($sql);
 
     $i=0;
-    while($row = pg_fetch_row($res))
-    {
-	$arr[$i]['tariff_id'] = $row[0];
-	$arr[$i]['mins']      = $row[1];
-	$arr[$i]['count']   = $row[2];
-	$arr[$i]['amount']  = $row[3];
-	$arr[$i]['tariff']  = re_get_tariff_name($arr[$i]['tariff_id']);
-	$i++;
+    while($row = pg_fetch_row($res)) {
+	    $arr[$i]['tariff_id'] = $row[0];
+	    $arr[$i]['mins']      = $row[1];
+	    $arr[$i]['count']   = $row[2];
+	    $arr[$i]['amount']  = $row[3];
+	    $arr[$i]['tariff']  = re_get_tariff_name($arr[$i]['tariff_id']);
+
+        $i++;
     }
+
     return $arr;
 }
 
 function re_get_nsg_counters($cdr_server_id,$cur,$step,$var,$val)
 {
     $arr = '';
+
     $query = "select sum(billsec)/60,count(*) 
               from cdrs 
               where 
@@ -665,64 +673,73 @@ function re_get_nsg_counters($cdr_server_id,$cur,$step,$var,$val)
              ";
     $res = re_query($query);
 
-    while($row = pg_fetch_row($res))
-    {
-	$arr['mins']  = $row[0];
-	$arr['calls'] = $row[1];
+    while($row = pg_fetch_row($res)) {
+	    $arr['mins']  = $row[0];
+	    $arr['calls'] = $row[1];
     }
+
     return $arr;
 }
 
 function re_get_rating_modes()
 {
     $mode = '';
+
     $query = "select id,name from rating_mode order by id";
     $res = re_query($query);
+
     $i=0;
-    while($row = pg_fetch_row($res))
-    {
-	$mode[$i]['id'] = $row[0];
-	$mode[$i]['name'] = $row[1];
-	$i++;
+    while($row = pg_fetch_row($res)) {
+	    $mode[$i]['id'] = $row[0];
+	    $mode[$i]['name'] = $row[1];
+
+        $i++;
     }
+
     return $mode;
 }
 
 function re_get_rating_mode($id)
 {
     $mode = '';
+
     $query = "select name from rating_mode where id = ".$id."";
     $res = re_query($query);
-    while($row = pg_fetch_row($res))
-    {
+
+    while($row = pg_fetch_row($res)) {
 		$mode = $row[0];
     }
+
     return $mode;
 }
 
 function re_get_rating_mode_id($mode)
 {
     $id = 0;
+
     $query = "select id from rating_mode where name = '".$mode."'";
     $res = re_query($query);
-    while($row = pg_fetch_row($res))
-    {
-	$id = $row[0];
+
+    while($row = pg_fetch_row($res)) {
+	    $id = $row[0];
     }
+
     return $id;
 }
 
 function re_get_account_code_bid($bid)
 {
     $acc = "";
+
     $query = "select account_code 
               from account_code 
               where billing_account_id = ".$bid."";
     $res = re_query($query);
-    while($row = pg_fetch_row($res))
-    {
-	$acc = $row[0];
+
+    while($row = pg_fetch_row($res)) {
+	    $acc = $row[0];
     }
+
     return $acc;
 }
 
@@ -730,48 +747,55 @@ function re_get_account_code_bid($bid)
 function re_get_billing_account_id($billing_account)
 {
     $id = 0;
+
     $query = "select id from billing_account where username = '".$billing_account."'";
     $res = re_query($query);
-    while($row = pg_fetch_row($res))
-    {
-	$id = $row[0];
+
+    while($row = pg_fetch_row($res)) {
+	    $id = $row[0];
     }
+
     return $id;
 }
 
 function re_get_bacc($bacc_id)
 {
     $bacc = "";
+
     $query = "select username,billing_day,day_of_payment from billing_account where id = ".$bacc_id."";
     $res = re_query($query);
-    while($row = pg_fetch_row($res))
-    {
-	$bacc['acc'] = $row[0];
-	$bacc['bday'] = $row[1];
-	$bacc['dday'] = $row[2];
+
+    while($row = pg_fetch_row($res)) {
+	    $bacc['acc'] = $row[0];
+	    $bacc['bday'] = $row[1];
+	    $bacc['dday'] = $row[2];
     }
+
     return $bacc;
 }
 
 function re_get_baccs($username)
 {
     $bacc = "";
+
     $query = "select bacc.id,bacc.username,bacc.billing_day,bacc.leg,cr.name
               from billing_account as bacc,currency as cr
               where bacc.currency_id = cr.id order by bacc.id";
     if(!empty($username)) $query .= " and username like '".$username."%'";
 
     $res = re_query($query);
+
     $i=0;
-    while($row = pg_fetch_row($res))
-    {
-	$bacc[$i]['id'] = $row[0];
-	$bacc[$i]['acc'] = $row[1];
-	$bacc[$i]['bday'] = $row[2];
-	$bacc[$i]['leg'] = $row[3];
-	$bacc[$i]['curr'] = $row[4];
-	$i++;
+    while($row = pg_fetch_row($res)) {
+	    $bacc[$i]['id'] = $row[0];
+	    $bacc[$i]['acc'] = $row[1];
+	    $bacc[$i]['bday'] = $row[2];
+	    $bacc[$i]['leg'] = $row[3];
+	    $bacc[$i]['curr'] = $row[4];
+
+        $i++;
     }
+
     return $bacc;
 }
 
@@ -783,12 +807,13 @@ function re_get_currency()
     $res = re_query($sql);
 
     $i = 0;
-    while($row = pg_fetch_row($res))
-    {
-	$arr[$i]['id']   = $row[0];
-	$arr[$i]['name'] = $row[1];
-	$i++;
+    while($row = pg_fetch_row($res)) {
+	    $arr[$i]['id']   = $row[0];
+	    $arr[$i]['name'] = $row[1];
+
+        $i++;
     }
+
     return $arr;
 }
 
@@ -796,16 +821,17 @@ function re_get_cdr_servers()
 {
     $arr = "";
 
-//    $sql = "select id,server_name from cdr_servers order by id;";
     $sql = "select cdr_servers.id,cdr_profiles.profile_name from cdr_servers,cdr_profiles where cdr_servers.cdr_profiles_id = cdr_profiles.id";
     $res = re_query($sql);
 
     $i = 0;
     while($row = pg_fetch_row($res)) {
-	$arr[$i]['id']   = $row[0];
-	$arr[$i]['server_name'] = $row[1];
-	$i++;
+	    $arr[$i]['id']   = $row[0];
+	    $arr[$i]['server_name'] = $row[1];
+
+        $i++;
     }
+
     return $arr;
 }
 
@@ -817,12 +843,13 @@ function re_get_round_modes()
     $res = re_query($sql);
 
     $i = 0;
-    while($row = pg_fetch_row($res))
-    {
-	$arr[$i]['id']   = $row[0];
-	$arr[$i]['name'] = $row[1];
-	$i++;
+    while($row = pg_fetch_row($res)) {
+	    $arr[$i]['id']   = $row[0];
+	    $arr[$i]['name'] = $row[1];
+
+        $i++;
     }
+
     return $arr;
 }
 
@@ -840,22 +867,24 @@ function re_get_bacc_data($username)
             cr.id = bacc.currency_id and 
             bacc.username like '".$username."%';";
     $res = re_query($sql);
+
     $i = 0;
-    while($row = pg_fetch_row($res))
-    {
-	$arr[$i]['id'] = $row[0];
-	$arr[$i]['username'] = $row[1];
-	$arr[$i]['currency'] = $row[2];
-	$arr[$i]['leg'] = $row[3];
-	$arr[$i]['cdr_server'] = $row[4];
-	$arr[$i]['bday']  = $row[5];
-	$arr[$i]['round'] = $row[6];
-	$arr[$i]['dday']  = $row[7];
-	$arr[$i]['cdr_server_id'] = $row[8];
-	$arr[$i]['round_mode_id'] = $row[9];
-	$arr[$i]['currency_id']   = $row[10];
-	$i++;
+    while($row = pg_fetch_row($res)) {
+        $arr[$i]['id'] = $row[0];
+        $arr[$i]['username'] = $row[1];
+        $arr[$i]['currency'] = $row[2];
+        $arr[$i]['leg'] = $row[3];
+        $arr[$i]['cdr_server'] = $row[4];
+        $arr[$i]['bday']  = $row[5];
+        $arr[$i]['round'] = $row[6];
+        $arr[$i]['dday']  = $row[7];
+        $arr[$i]['cdr_server_id'] = $row[8];
+        $arr[$i]['round_mode_id'] = $row[9];
+        $arr[$i]['currency_id']   = $row[10];
+
+        $i++;
     }
+
     return $arr;
 }
 
@@ -874,22 +903,24 @@ function re_get_bacc_data_v2($username)
             cr.id = bacc.currency_id and 
             bacc.username like '".$username."%';";
     $res = re_query($sql);
+
     $i = 0;
-    while($row = pg_fetch_row($res))
-    {
-	$arr[$i]['id'] = $row[0];
-	$arr[$i]['username'] = $row[1];
-	$arr[$i]['currency'] = $row[2];
-	$arr[$i]['leg'] = $row[3];
-	$arr[$i]['cdr_server'] = $row[4];
-	$arr[$i]['bday']  = $row[5];
-	$arr[$i]['round'] = $row[6];
-	$arr[$i]['dday']  = $row[7];
-	$arr[$i]['cdr_server_id'] = $row[8];
-	$arr[$i]['round_mode_id'] = $row[9];
-	$arr[$i]['currency_id']   = $row[10];
-	$i++;
+    while($row = pg_fetch_row($res)) {
+        $arr[$i]['id'] = $row[0];
+        $arr[$i]['username'] = $row[1];
+        $arr[$i]['currency'] = $row[2];
+        $arr[$i]['leg'] = $row[3];
+        $arr[$i]['cdr_server'] = $row[4];
+        $arr[$i]['bday']  = $row[5];
+        $arr[$i]['round'] = $row[6];
+        $arr[$i]['dday']  = $row[7];
+        $arr[$i]['cdr_server_id'] = $row[8];
+        $arr[$i]['round_mode_id'] = $row[9];
+        $arr[$i]['currency_id']   = $row[10];
+
+        $i++;
     }
+
     return $arr;
 }
 
@@ -908,20 +939,20 @@ function re_get_bacc_data_2($bacc_id)
             bacc.id = ".$bacc_id.";";
     $res = re_query($sql);
 
-    while($row = pg_fetch_row($res))
-    {
-	$arr['id'] = $row[0];
-	$arr['username'] = $row[1];
-	$arr['currency'] = $row[2];
-	$arr['leg'] = $row[3];
-	$arr['cdr_server'] = $row[4];
-	$arr['bday']  = $row[5];
-	$arr['round'] = $row[6];
-	$arr['dday']  = $row[7];
-	$arr['cdr_server_id'] = $row[8];
-	$arr['round_mode_id'] = $row[9];
-	$arr['currency_id']   = $row[10];
+    while($row = pg_fetch_row($res)) {
+        $arr['id'] = $row[0];
+        $arr['username'] = $row[1];
+        $arr['currency'] = $row[2];
+        $arr['leg'] = $row[3];
+        $arr['cdr_server'] = $row[4];
+        $arr['bday']  = $row[5];
+        $arr['round'] = $row[6];
+        $arr['dday']  = $row[7];
+        $arr['cdr_server_id'] = $row[8];
+        $arr['round_mode_id'] = $row[9];
+        $arr['currency_id']   = $row[10];
     }
+
     return $arr;
 }
 
@@ -941,83 +972,91 @@ function re_get_bacc_data_2_v2($bacc_id)
             bacc.id = ".$bacc_id.";";
     $res = re_query($sql);
 
-    while($row = pg_fetch_row($res))
-    {
-	$arr['id'] = $row[0];
-	$arr['username'] = $row[1];
-	$arr['currency'] = $row[2];
-	$arr['leg'] = $row[3];
-	$arr['cdr_server'] = $row[4];
-	$arr['bday']  = $row[5];
-	$arr['round'] = $row[6];
-	$arr['dday']  = $row[7];
-	$arr['cdr_server_id'] = $row[8];
-	$arr['round_mode_id'] = $row[9];
-	$arr['currency_id']   = $row[10];
+    while($row = pg_fetch_row($res)) {
+        $arr['id'] = $row[0];
+        $arr['username'] = $row[1];
+        $arr['currency'] = $row[2];
+        $arr['leg'] = $row[3];
+        $arr['cdr_server'] = $row[4];
+        $arr['bday']  = $row[5];
+        $arr['round'] = $row[6];
+        $arr['dday']  = $row[7];
+        $arr['cdr_server_id'] = $row[8];
+        $arr['round_mode_id'] = $row[9];
+        $arr['currency_id']   = $row[10];
     }
+
     return $arr;
 }
 
 function re_get_prefix()
 {
     $arr = "";
-    $query = "select id,prefix,comm from prefix";
 
+    $query = "select id,prefix,comm from prefix";
     $res = re_query($query);
+
     $i=0;
-    while($row = pg_fetch_row($res))
-    {
-	$arr[$i]['id'] = $row[0];
-	$arr[$i]['prefix'] = $row[1];
-	$arr[$i]['comm'] = $row[2];
-	$i++;
+    while($row = pg_fetch_row($res)) {
+	    $arr[$i]['id'] = $row[0];
+	    $arr[$i]['prefix'] = $row[1];
+	    $arr[$i]['comm'] = $row[2];
+
+        $i++;
     }
+
     return $arr;
 }
 
 function re_get_bills($id)
 {
     $bacc = "";
+
     $query = "select balance.id,balance.amount,
               balance.last_update,balance.start_date,balance.end_date,balance.active,billing_account.username
               from balance,billing_account
               where balance.billing_account_id = ".$id." and balance.billing_account_id = billing_account.id";
     $res = re_query($query);
+
     $i=0;
-    while($row = pg_fetch_row($res))
-    {
-	$bacc[$i]['id'] = $row[0];
-	$bacc[$i]['amount'] = $row[1];
-	$bacc[$i]['last_update'] = $row[2];
-	$bacc[$i]['start_date'] = $row[3];
-	$bacc[$i]['end_date'] = $row[4];
-	$bacc[$i]['active'] = $row[5];
-	$bacc[$i]['username'] = $row[6];
-	$i++;
+    while($row = pg_fetch_row($res)) {
+        $bacc[$i]['id'] = $row[0];
+        $bacc[$i]['amount'] = $row[1];
+        $bacc[$i]['last_update'] = $row[2];
+        $bacc[$i]['start_date'] = $row[3];
+        $bacc[$i]['end_date'] = $row[4];
+        $bacc[$i]['active'] = $row[5];
+        $bacc[$i]['username'] = $row[6];
+
+        $i++;
     }
+
     return $bacc;
 }
 
 function re_get_balance2($id)
 {
     $bal = "";
+
     $query = "select balance.id,balance.amount,
               balance.last_update,balance.start_date,balance.end_date,balance.active,billing_account.username
               from balance,billing_account
               where balance.id = ".$id." and balance.billing_account_id = billing_account.id";
     $res = re_query($query);
+
     $i=0;
-    while($row = pg_fetch_row($res))
-    {
-	$bal[$i]['id'] = $row[0];
-	$bal[$i]['amount'] = $row[1];
-	$bal[$i]['last_update'] = $row[2];
-	$bal[$i]['start_date'] = $row[3];
-	$bal[$i]['end_date'] = $row[4];
-	$bal[$i]['active'] = $row[5];
-	$bal[$i]['username'] = $row[6];
-	$i++;
+    while($row = pg_fetch_row($res)) {
+        $bal[$i]['id'] = $row[0];
+        $bal[$i]['amount'] = $row[1];
+        $bal[$i]['last_update'] = $row[2];
+        $bal[$i]['start_date'] = $row[3];
+        $bal[$i]['end_date'] = $row[4];
+        $bal[$i]['active'] = $row[5];
+        $bal[$i]['username'] = $row[6];
+
+        $i++;
     }
+
     return $bal;
 }
 
@@ -1028,10 +1067,10 @@ function re_get_free_billsec($free_billsec_id)
     $sql = "select free_billsec from free_billsec where id = ".$free_billsec_id.";";
     $res = re_query($sql);
 
-    while($row = pg_fetch_row($res))
-    {
-	$sec = $row[0];
+    while($row = pg_fetch_row($res)) {
+        $sec = $row[0];
     }
+
     return $sec;
 }
 
@@ -1043,10 +1082,10 @@ function re_get_tid_free_billsec($tid)
             where tr.id = ".$tid." and tr.free_billsec_id = fr.id;";
     $res = re_query($sql);
 
-    while($row = pg_fetch_row($res))
-    {
-	$sec = $row[0];
+    while($row = pg_fetch_row($res)) {
+        $sec = $row[0];
     }
+
     return $sec;
 }
 
@@ -1058,12 +1097,13 @@ function re_get_free_billsec_bal()
     $res = re_query($sql);
 
     $i=0;
-    while($row = pg_fetch_row($res))
-    {
-	$arr[$i]['id'] = $row[0];
-	$arr[$i]['balance_id'] = $row[1];
-	$i++;
+    while($row = pg_fetch_row($res)) {
+	    $arr[$i]['id'] = $row[0];
+	    $arr[$i]['balance_id'] = $row[1];
+
+        $i++;
     }
+
     return $arr;
 }
 
@@ -1074,10 +1114,10 @@ function re_get_free_billsec_bal_id($bid)
     $sql = "select id from free_billsec_balance where balance_id = ".$bid."";
     $res = re_query($sql);
 
-    while($row = pg_fetch_row($res))
-    {
-	$id = $row[0];
+    while($row = pg_fetch_row($res)) {
+	    $id = $row[0];
     }
+
     return $id;
 }
 
@@ -1089,16 +1129,17 @@ function re_get_calc_functions($tariff_id)
     $res = re_query($sql);
 
     $i = 0;
-    while($row = pg_fetch_row($res))
-    {
-	$arr[$i]['id'] = $row[0];
-	$arr[$i]['tariff_id'] = $row[1];
-	$arr[$i]['pos'] = $row[2];
-	$arr[$i]['delta_time'] = $row[3];
-	$arr[$i]['fee'] = $row[4];
-	$arr[$i]['iterations'] = $row[5];
-	$i++;
+    while($row = pg_fetch_row($res)) {
+        $arr[$i]['id'] = $row[0];
+        $arr[$i]['tariff_id'] = $row[1];
+        $arr[$i]['pos'] = $row[2];
+        $arr[$i]['delta_time'] = $row[3];
+        $arr[$i]['fee'] = $row[4];
+        $arr[$i]['iterations'] = $row[5];
+
+        $i++;
     }
+
     return $arr;
 }
 
@@ -1106,9 +1147,9 @@ function re_get_bplan_name($bid)
 {
     $sql = "select name from bill_plan where id = ".$bid.";";
     $res = re_query($sql);
-    while($row = pg_fetch_row($res))
-    {
-	return $row[0];
+
+    while($row = pg_fetch_row($res)) {
+	    return $row[0];
     }
 }
 
@@ -1128,11 +1169,11 @@ function re_get_bill_plans_tree_id($root_id)
     $res = re_query($sql);
 
     $i=0;
-    while($row = pg_fetch_row($res))
-    {
-	$arr[$i]['id'] = $row[0];
-	$arr[$i]['name'] = $row[1];
-	$i++;
+    while($row = pg_fetch_row($res)) {
+        $arr[$i]['id'] = $row[0];
+        $arr[$i]['name'] = $row[1];
+
+        $i++;
     }
 
     return $arr;
@@ -1150,15 +1191,15 @@ function re_get_rates_bplan_id($bplan_id)
     $res = re_query($sql);
 
     $i = 0;
-    while($row = pg_fetch_row($res))
-    {
-	$arr[$i]['rate_id'] = $row[0];
-	$arr[$i]['prefix_id'] = $row[1];
-	$arr[$i]['prefix']    = $row[2];
-	$arr[$i]['tariff_id']   = $row[3];
-	$arr[$i]['tariff_name'] = $row[4];
-	$arr[$i]['free_billsec_id'] = $row[5];
-	$i++;
+    while($row = pg_fetch_row($res)) {
+        $arr[$i]['rate_id'] = $row[0];
+        $arr[$i]['prefix_id'] = $row[1];
+        $arr[$i]['prefix']    = $row[2];
+        $arr[$i]['tariff_id']   = $row[3];
+        $arr[$i]['tariff_name'] = $row[4];
+        $arr[$i]['free_billsec_id'] = $row[5];
+
+        $i++;
     }
 
     return $arr;
@@ -1168,15 +1209,17 @@ function re_get_bill_plans()
 {
     $query = "select id,name,to_timestamp(start_period),to_timestamp(end_period) from bill_plan";
     $res = re_query($query);
+
     $i = 0;
-    while($row = pg_fetch_row($res))
-    {
-	$arr[$i]['id'] = $row[0];
-	$arr[$i]['name'] = $row[1];
-	$arr[$i]['start_period'] = $row[2];
-	$arr[$i]['end_period'] = $row[3];
-	$i++;
+    while($row = pg_fetch_row($res)) {
+        $arr[$i]['id'] = $row[0];
+        $arr[$i]['name'] = $row[1];
+        $arr[$i]['start_period'] = $row[2];
+        $arr[$i]['end_period'] = $row[3];
+
+        $i++;
     }
+
     return $arr;
 }
 
@@ -1184,15 +1227,17 @@ function re_get_bill_plans_2($bplan_id)
 {
     $query = "select id,name,to_timestamp(start_period),to_timestamp(end_period) from bill_plan where id = ".$bplan_id."";
     $res = re_query($query);
+
     $i = 0;
-    while($row = pg_fetch_row($res))
-    {
-	$arr[$i]['id'] = $row[0];
-	$arr[$i]['name'] = $row[1];
-	$arr[$i]['start_period'] = $row[2];
-	$arr[$i]['end_period'] = $row[3];
-	$i++;
+    while($row = pg_fetch_row($res)) {
+        $arr[$i]['id'] = $row[0];
+        $arr[$i]['name'] = $row[1];
+        $arr[$i]['start_period'] = $row[2];
+        $arr[$i]['end_period'] = $row[3];
+
+        $i++;
     }
+
     return $arr;
 }
 
@@ -1200,27 +1245,28 @@ function re_get_bill_plan_tree()
 {
     $query = "SELECT root_bplan_id from bill_plan_tree group by root_bplan_id;";
     $res = re_query($query);
+
     $i = 0;
-    while($row = pg_fetch_row($res))
-    {
-	$arr[$i]['id'] = $row[0];
-	$i++;
+    while($row = pg_fetch_row($res)) {
+	    $arr[$i]['id'] = $row[0];
+	    $i++;
     }
 
     $p=0;$i=0;
-    while($arr[$i]['id'])
-    {
-	$query2 = "select id,name,to_timestamp(start_period),to_timestamp(end_period) from bill_plan where id = ".$arr[$i]['id']."";
-	$res2 = re_query($query2);
-	while($row = pg_fetch_row($res2))
-	{
-	    $arr2[$p]['id'] = $row[0];
-	    $arr2[$p]['name'] = $row[1];
-	    $arr2[$p]['start_period'] = $row[2];
-	    $arr2[$p]['end_period'] = $row[3];
-	    $p++;
-	}
-	$i++;
+    while($arr[$i]['id']) {
+        $query2 = "select id,name,to_timestamp(start_period),to_timestamp(end_period) from bill_plan where id = ".$arr[$i]['id']."";
+        $res2 = re_query($query2);
+
+        while($row = pg_fetch_row($res2)) {
+	        $arr2[$p]['id'] = $row[0];
+	        $arr2[$p]['name'] = $row[1];
+	        $arr2[$p]['start_period'] = $row[2];
+	        $arr2[$p]['end_period'] = $row[3];
+
+            $p++;
+	    }
+
+        $i++;
     }
 
     return $arr2;
@@ -1229,12 +1275,14 @@ function re_get_bill_plan_tree()
 function re_get_bill_plan_id($bill_plan)
 {
     $id = 0;
+
     $query = "select id from bill_plan where name = '".$bill_plan."'";
     $res = re_query($query);
-    while($row = pg_fetch_row($res))
-    {
-	$id = $row[0];
+
+    while($row = pg_fetch_row($res)) {
+	    $id = $row[0];
     }
+
     return $id;
 }
 
@@ -1243,10 +1291,10 @@ function re_get_bacc_num_clg($bacc_id)
     $num = 0;
 
     $query = "SELECT count(*) from calling_number where billing_account_id = ".$bacc_id.";";
-
     $res = re_query($query);
+
     while($row = pg_fetch_row($res)) {
-	$num = $row[0];
+	    $num = $row[0];
     }
 
     return $num;
@@ -1264,7 +1312,6 @@ function re_insert_bill_plan($bplan)
 
     $query .= ")";
 
-    echo $query."<br>\n";
     re_query($query);
 
     return re_get_bill_plan_id($bplan['name']);
@@ -1273,25 +1320,18 @@ function re_insert_bill_plan($bplan)
 function re_insert_billing_account($user)
 {
     $username_test = $user['billing_account'];
-    hpvp_put_syslog(LOG_N,"[re_insert_billing_account()],$username_test");
 
-//    if($user['billing_day'] == '01') $dday = 14;
-//    else if($user['billing_day'] == '11') $dday = 25;
-//    else if($user['billing_day'] == '21') $dday = 5;
-//    else 
     $dday = 0;
 
     $query = "insert into billing_account
               (username,currency_id,leg,cdr_server_id,billing_day,day_of_payment)
               values ('".$user['billing_account']."',".$user['curr_id'].",'".$user['leg']."',".$user['cdr_server_id'].",'".$user['billing_day']."',".$dday.")";
-    hpvp_put_syslog(LOG_N,"[re_insert_billing_account()];$query");
     re_query($query);
 }
 
 function re_insert_billing_account_2($user)
 {
     $username_test = $user['username'];
-    hpvp_put_syslog(LOG_N,"[re_insert_billing_account_2()],$username_test");
 
     if(empty($user['dday']))
     {
@@ -1309,7 +1349,6 @@ $dday = 0;
     $query = "insert into billing_account 
               (username,currency_id,leg,cdr_server_id,billing_day,day_of_payment,round_mode_id) 
               values ('".$user['username']."',".$user['curr_id'].",'".$user['leg']."',".$user['cdr_server_id'].",'".$user['billing_day']."',".$dday.",".$rr.")";
-    hpvp_put_syslog(LOG_N,"[re_insert_billing_account_2()];$query");
     re_query($query);
 
     return re_get_billing_account_id($user['username']);
@@ -1318,31 +1357,35 @@ $dday = 0;
 function re_get_rating_account_id($rating_mode,$rating_account)
 {
     $id = 0;
+
     $query = "select id from ".$rating_mode." where ".$rating_mode." = '".$rating_account."'";
-    //echo $query."\n";
     $res = re_query($query);
-    while($row = pg_fetch_row($res))
-    {
-	$id = $row[0];
+
+    while($row = pg_fetch_row($res)) {
+	    $id = $row[0];
     }
+
     return $id;
 }
 
 function re_get_racc_bacc_id($rmode,$bacc_id)
 {
     $racc = "";
+
     $query = "select ".$rmode." from ".$rmode." where billing_account_id = ".$bacc_id."";
     $res = re_query($query);
-    while($row = pg_fetch_row($res))
-    {
-	$racc = $row[0];
+
+    while($row = pg_fetch_row($res)) {
+	    $racc = $row[0];
     }
+
     return $racc;
 }
 
 function re_get_bdata($clg)
 {
     $bdata = "";
+
     $query = "SELECT bacc.billing_day,bacc.day_of_payment,bacc.id,clg.id 
               from calling_number as clg,billing_account as bacc 
               where clg.billing_account_id = bacc.id and 
@@ -1350,10 +1393,10 @@ function re_get_bdata($clg)
     $res = re_query($query);
 
     while($row = pg_fetch_row($res)) {
-	$bdata['bday'] = $row[0];
-	$bdata['dday'] = $row[1];
-	$bdata['bacc'] = $row[2];
-	$bdata['clg']  = $row[3];
+	    $bdata['bday'] = $row[0];
+	    $bdata['dday'] = $row[1];
+	    $bdata['bacc'] = $row[2];
+	    $bdata['clg']  = $row[3];
     }
 
     return $bdata;
@@ -1362,48 +1405,56 @@ function re_get_bdata($clg)
 function re_get_racc($rmode,$racc_id)
 {
     $racc = "";
+
     $query = "select ".$rmode." from ".$rmode." where id = ".$racc_id."";
     $res = re_query($query);
-    while($row = pg_fetch_row($res))
-    {
-	$racc = $row[0];
+
+    while($row = pg_fetch_row($res)) {
+	    $racc = $row[0];
     }
+
     return $racc;
 }
 
 function re_get_racc_bplan_id($rmode,$racc_id)
 {
     $id = 0;
+
     $query = "select bill_plan_id from ".$rmode."_deff where ".$rmode."_id = ".$racc_id."";
     $res = re_query($query);
-    while($row = pg_fetch_row($res))
-    {
-	$id = $row[0];
+
+    while($row = pg_fetch_row($res)) {
+	    $id = $row[0];
     }
+
     return $id;
 }
 
 function re_get_racc_deff_id($rmode,$racc_id)
 {
     $id = 0;
+
     $query = "select id from ".$rmode."_deff where ".$rmode."_id = ".$racc_id."";
     $res = re_query($query);
-    while($row = pg_fetch_row($res))
-    {
-	$id = $row[0];
+
+    while($row = pg_fetch_row($res)) {
+	    $id = $row[0];
     }
+
     return $id;
 }
 
 function re_get_racc_acc($rmode,$racc_id)
 {
     $acc = "";
+
     $query = "select ".$rmode." from ".$rmode." where id = ".$racc_id."";
     $res = re_query($query);
-    while($row = pg_fetch_row($res))
-    {
-	$acc = $row[0];
+
+    while($row = pg_fetch_row($res)) {
+	    $acc = $row[0];
     }
+
     return $acc;
 }
 
@@ -1416,11 +1467,12 @@ function re_get_racc_2($rmode,$racc)
 
     $i=0;
     while($row = pg_fetch_row($res)) {
-	$arr[$i]['id'] = $row[0];
-	$arr[$i]['racc'] = $row[2];
-	$arr[$i]['billing_account_id'] = $row[1];
-	$arr[$i]['rmode'] = $rmode;
-	$i++;
+	    $arr[$i]['id'] = $row[0];
+	    $arr[$i]['racc'] = $row[2];
+	    $arr[$i]['billing_account_id'] = $row[1];
+	    $arr[$i]['rmode'] = $rmode;
+
+        $i++;
     }
 
     return $arr;
@@ -1440,13 +1492,14 @@ function re_get_racc_3($rmode,$bid)
 
     $i=0;
     while($row = pg_fetch_row($res)) {
-	$arr[$i]['id'] = $row[0];
-	$arr[$i]['racc'] = $row[1];
-	$arr[$i]['bill_plan_id'] = $row[2];
-	$arr[$i]['bplan'] = re_get_bplan_name($row[2]);
-	$arr[$i]['sm_bill_plan_id'] = $row[3];
-	$arr[$i]['sm_bplan'] = re_get_bplan_name($row[3]);
-	$i++;
+	    $arr[$i]['id'] = $row[0];
+	    $arr[$i]['racc'] = $row[1];
+	    $arr[$i]['bill_plan_id'] = $row[2];
+	    $arr[$i]['bplan'] = re_get_bplan_name($row[2]);
+	    $arr[$i]['sm_bill_plan_id'] = $row[3];
+	    $arr[$i]['sm_bplan'] = re_get_bplan_name($row[3]);
+
+        $i++;
     }
 
     return $arr;
@@ -1461,10 +1514,10 @@ function re_get_rmode_bplan($rmode,$racc_id)
             tm.calling_number_id = ".$racc_id.";";
     $res = re_query($sql);
 
-    while($row = pg_fetch_row($res))
-    {
-	$name = $row[0];
+    while($row = pg_fetch_row($res)) {
+	    $name = $row[0];
     }
+
     return $name;
 }
 
@@ -1473,19 +1526,19 @@ function re_insert_rating_account($rating_mode,$rating_account,$billing_account_
     $id = re_get_rating_account_id($rating_mode,$rating_account);
 
     if($id == 0) {
-	$query = "insert into ".$rating_mode." (".$rating_mode.",billing_account_id) values ('".$rating_account."',".$billing_account_id.")";
-	re_query($query);
+	    $query = "insert into ".$rating_mode." (".$rating_mode.",billing_account_id) values ('".$rating_account."',".$billing_account_id.")";
+	    re_query($query);
     }
 
     $id = re_get_rating_account_id($rating_mode,$rating_account);
 
     if($rating_mode == 'calling_number') {
-	$query = "insert into ".$rating_mode."_deff 
+	    $query = "insert into ".$rating_mode."_deff
               (".$rating_mode."_id,bill_plan_id,sm_bill_plan_id)
               values
               (".$id.",".$bill_plan_id.",".$sm_bill_plan_id.")";
     } else {
-	$query = "insert into ".$rating_mode."_deff 
+	    $query = "insert into ".$rating_mode."_deff
               (".$rating_mode."_id,bill_plan_id)
               values
               (".$id.",".$bill_plan_id.")";
@@ -1493,7 +1546,7 @@ function re_insert_rating_account($rating_mode,$rating_account,$billing_account_
 
     if($id) re_query($query);
     else { 
-	return 0;
+	    return 0;
     }
 }
  
@@ -1502,10 +1555,10 @@ function re_insert_rating_account_2($rating_mode,$rating_account,$billing_accoun
     $query = "insert into ".$rating_mode." 
               (".$rating_mode.",billing_account_id) 
               values ('".$rating_account."',".$billing_account_id.")";
-    pg_query($dbconn,$query);
-    
+    re_query($query);
+
     $id = re_get_rating_account_id($rating_mode,$rating_account);
-    
+
     $query = "insert into ".$rating_mode."_deff 
               (".$rating_mode."_id,bill_plan_id,clg_nadi,cld_nadi)
               values
@@ -1520,38 +1573,41 @@ function re_insert_rating_account_2($rating_mode,$rating_account,$billing_accoun
 function re_get_pcard_type_id($pcard_type)
 {
     $id = 0;
+
     $query = "select id
               from pcard_type
               where 
               name like '".$pcard_type."%'";
     $result = re_query($query);
 
-    while($row = pg_fetch_row($result))
-    {
+    while($row = pg_fetch_row($result)) {
 		$id = $row[0];
     }
+
     return $id;
 }
 
 function re_get_pcard_status_id($pcard_status)
 {
     $id = 0;
+
     $query = "select id
               from pcard_status
               where 
               status like '".$pcard_status."%'";
     $result = re_query($query);
 
-    while($row = pg_fetch_row($result))
-    {
+    while($row = pg_fetch_row($result)) {
 		$id = $row[0];
     }
+
     return $id;
 }
 
 function re_get_pcard_id($bacc,$type_id,$status_id,$amount,$start,$end)
 {
     $id = 0;
+
     $query = "select id
               from pcard
               where 
@@ -1563,29 +1619,31 @@ function re_get_pcard_id($bacc,$type_id,$status_id,$amount,$start,$end)
               end_date = '".$end."'";
     $result = re_query($query);
 
-    while($row = pg_fetch_row($result))
-    {
-	$id = $row[0];
+    while($row = pg_fetch_row($result)) {
+	    $id = $row[0];
     }
+
     return $id;
 }
 
 function re_get_pcard_id_2($bacc)
 {
     $id = 0;
+
     $query = "select id from pcard where billing_account_id = ".$bacc."";
     $result = re_query($query);
 
-    while($row = pg_fetch_row($result))
-    {
-	$id = $row[0];
+    while($row = pg_fetch_row($result)) {
+	    $id = $row[0];
     }
+
     return $id;
 }
 
 function re_get_pcard_data($bacc_id)
 {
     $arr = "";
+
     $query = "SELECT 
               pc.amount,ps.status,pt.name,pc.start_date,pc.end_date,pc.last_update,pc.id,pt.id,ps.id,pc.sim,
               pc.call_number 
@@ -1596,26 +1654,27 @@ function re_get_pcard_data($bacc_id)
               ";
     $result = re_query($query);
 
-    while($row = pg_fetch_row($result))
-    {
-	$arr['pc_amount'] = $row[0];
-	$arr['pc_status'] = $row[1];
-	$arr['pc_type']   = $row[2];
-	$arr['pc_sdate']  = $row[3];
-	$arr['pc_edate']  = $row[4];
-	$arr['pc_last']   = $row[5];
-	$arr['pc_id']     = $row[6];
-	$arr['pc_type_id']   = $row[7];
-	$arr['pc_status_id'] = $row[8];
-	$arr['pc_sim'] = $row[9];
-	$arr['pc_num'] = $row[10];
+    while($row = pg_fetch_row($result)) {
+	    $arr['pc_amount'] = $row[0];
+	    $arr['pc_status'] = $row[1];
+	    $arr['pc_type']   = $row[2];
+	    $arr['pc_sdate']  = $row[3];
+	    $arr['pc_edate']  = $row[4];
+	    $arr['pc_last']   = $row[5];
+	    $arr['pc_id']     = $row[6];
+	    $arr['pc_type_id']   = $row[7];
+	    $arr['pc_status_id'] = $row[8];
+	    $arr['pc_sim'] = $row[9];
+	    $arr['pc_num'] = $row[10];
     }
+
     return $arr;
 }
 
 function re_get_pcard_data_2($bacc_id)
 {
     $arr = "";
+
     $query = "SELECT 
               pc.amount,ps.status,pt.name,pc.start_date,pc.end_date,pc.last_update,pc.id,pt.id,ps.id,pc.sim,
               pc.call_number 
@@ -1627,28 +1686,29 @@ function re_get_pcard_data_2($bacc_id)
     $result = re_query($query);
 
     $i=0;
-    while($row = pg_fetch_row($result))
-    {
-	$arr[$i]['pc_amount'] = $row[0];
-	$arr[$i]['pc_status'] = $row[1];
-	$arr[$i]['pc_type']   = $row[2];
-	$arr[$i]['pc_sdate']  = $row[3];
-	$arr[$i]['pc_edate']  = $row[4];
-	$arr[$i]['pc_last']   = $row[5];
-	$arr[$i]['pc_id']     = $row[6];
-	$arr[$i]['pc_type_id']   = $row[7];
-	$arr[$i]['pc_status_id'] = $row[8];
-	$arr[$i]['pc_sim'] = $row[9];
-	$arr[$i]['pc_num'] = $row[10];
-	
-	$i++;
+    while($row = pg_fetch_row($result)) {
+	    $arr[$i]['pc_amount'] = $row[0];
+	    $arr[$i]['pc_status'] = $row[1];
+	    $arr[$i]['pc_type']   = $row[2];
+	    $arr[$i]['pc_sdate']  = $row[3];
+	    $arr[$i]['pc_edate']  = $row[4];
+	    $arr[$i]['pc_last']   = $row[5];
+	    $arr[$i]['pc_id']     = $row[6];
+	    $arr[$i]['pc_type_id']   = $row[7];
+	    $arr[$i]['pc_status_id'] = $row[8];
+	    $arr[$i]['pc_sim'] = $row[9];
+	    $arr[$i]['pc_num'] = $row[10];
+
+	    $i++;
     }
+
     return $arr;
 }
 
 function re_get_blocked_pcards()
 {
     $arr = "";
+
     $query = "SELECT pc.id,pc.last_update,cn.calling_number,bacc.username,bacc.id 
               from pcard as pc,calling_number as cn,billing_account as bacc 
               where pc.pcard_status_id = 2 and 
@@ -1656,22 +1716,25 @@ function re_get_blocked_pcards()
               bacc.id = pc.billing_account_id 
               order by pc.last_update;";
     $result = re_query($query);
+
     $i = 0;
-    while($row = pg_fetch_row($result))
-    {
-	$arr[$i]['id'] = $row[0];
-	$arr[$i]['last_update'] = $row[1];
-	$arr[$i]['calling_number'] = $row[2];
-	$arr[$i]['bacc_username'] = $row[3];
-	$arr[$i]['bacc_id'] = $row[4];
-	$i++;
+    while($row = pg_fetch_row($result)) {
+	    $arr[$i]['id'] = $row[0];
+	    $arr[$i]['last_update'] = $row[1];
+	    $arr[$i]['calling_number'] = $row[2];
+	    $arr[$i]['bacc_username'] = $row[3];
+	    $arr[$i]['bacc_id'] = $row[4];
+
+        $i++;
     }
+
     return $arr;
 }
 
 function re_get_inuse_pcards()
 {
     $arr = "";
+
     $query = "SELECT pc.id,pc.last_update,cn.calling_number,bacc.username,bacc.id 
               from pcard as pc,calling_number as cn,billing_account as bacc 
               where pc.pcard_status_id = 1 and pc.sim > 0 and 
@@ -1679,16 +1742,18 @@ function re_get_inuse_pcards()
               bacc.id = pc.billing_account_id 
               order by pc.billing_account_id;";
     $result = re_query($query);
+
     $i = 0;
-    while($row = pg_fetch_row($result))
-    {
-	$arr[$i]['id'] = $row[0];
-	$arr[$i]['last_update'] = $row[1];
-	$arr[$i]['calling_number'] = $row[2];
-	$arr[$i]['bacc_username'] = $row[3];
-	$arr[$i]['bacc_id'] = $row[4];
-	$i++;
+    while($row = pg_fetch_row($result)) {
+	    $arr[$i]['id'] = $row[0];
+	    $arr[$i]['last_update'] = $row[1];
+	    $arr[$i]['calling_number'] = $row[2];
+	    $arr[$i]['bacc_username'] = $row[3];
+	    $arr[$i]['bacc_id'] = $row[4];
+
+        $i++;
     }
+
     return $arr;
 }
 
@@ -1704,7 +1769,6 @@ function re_insert_pcard($bacc_id,$pcard_tp,$pcard_sts,$amount,$start_date,$end_
 {
     $query = "insert into pcard (billing_account_id,pcard_status_id,pcard_type_id,amount,start_date,end_date,last_update) 
               values (".$bacc_id.",".$pcard_sts.",".$pcard_tp.",".$amount.",'".$start_date."','".$end_date."','now()')";
-    hpvp_put_syslog(LOG_N,$query);
 
     re_query($query);
 }
@@ -1824,16 +1888,12 @@ function re_update_bacc_2($id,$usr,$bday)
             set username = '".$usr."',
             billing_day = '".$bday."' 
             where id = ".$id."";
-    hpvp_put_syslog(LOG_N,"$sql");
-
     re_query($sql);
 }
 
 function re_update_bacc_username($id,$usr)
 {
     $sql = "update billing_account set username = '".$usr."' where id = ".$id."";
-    hpvp_put_syslog(LOG_N,"$sql");
-
     re_query($sql);
 }
 
@@ -1898,96 +1958,80 @@ function re_create_account($user)
     if(empty($user['rating_mode'])) return 0;
 
     $username_test = $user['billing_account'];
-    hpvp_put_syslog(LOG_N,"[re_create_account()],$username_test");
 
     // Insert BillingAccount
     $bacc_check_flag = 0;
-    bacc_check:
+
+bacc_check:
     $billing_account_id = re_get_billing_account_id($user['billing_account']);
-    if(($billing_account_id == 0)&&($bacc_check_flag == 0))
-    {
-	re_insert_billing_account($user);
-	$bacc_check_flag = 1;
-	goto bacc_check;
+
+    if(($billing_account_id == 0)&&($bacc_check_flag == 0)) {
+	    re_insert_billing_account($user);
+	    $bacc_check_flag = 1;
+	    goto bacc_check;
     }
 
-    if(($billing_account_id == 0)&&($bacc_check_flag))
-    {
-	hpvp_put_syslog(LOG_N,"[re_create_account()],A billing_account_id is null!!!");
-	return 0;
+    if(($billing_account_id == 0)&&($bacc_check_flag)) {
+	    return 0;
     }
 
     $re_bill_plan_id = re_get_bill_plan_id($user['re_bill_plan']);
 
-    if($re_bill_plan_id == 0)
-    {
-	hpvp_put_syslog(LOG_N,"[re_create_account()],A re_bill_plan_id is null!!!");
-	return 0;
+    if($re_bill_plan_id == 0) {
+	    return 0;
     }
 
     $sm_bill_plan_id = re_get_bill_plan_id($user['sm_bill_plan']);
 
-//    if($sm_bill_plan_id == 0)
-//    {
-//	hpvp_put_syslog(LOG_N,"[re_create_account()],A re_bill_plan_id is null!!!");
-//	return 0;
-//    }
-
     // Insert RatingAccount
     $racc_check_flag = 0;
-    racc_check:
+
+racc_check:
     $rating_account_id = re_get_rating_account_id($user['rating_mode'],$user['rating_account']);
-    if(($rating_account_id == 0)&&($racc_check_flag == 0))
-    {
-	if(re_get_rating_mode_id($user['rating_mode']) <= 4) 
-	    re_insert_rating_account($user['rating_mode'],$user['rating_account'],$billing_account_id,$re_bill_plan_id,$sm_bill_plan_id);
+
+    if(($rating_account_id == 0)&&($racc_check_flag == 0)) {
+	    if(re_get_rating_mode_id($user['rating_mode']) <= 4)
+	        re_insert_rating_account($user['rating_mode'],$user['rating_account'],$billing_account_id,$re_bill_plan_id,$sm_bill_plan_id);
 	
-	if(re_get_rating_mode_id($user['rating_mode']) >= 5) 
-	    re_insert_rating_account_2($user['rating_mode'],$user['rating_account'],$billing_account_id,$re_bill_plan_id,$clg_nadi,$cld_nadi);
+	    if(re_get_rating_mode_id($user['rating_mode']) >= 5)
+            //re_insert_rating_account_2($user['rating_mode'],$user['rating_account'],$billing_account_id,$re_bill_plan_id,$clg_nadi,$cld_nadi);
+            re_insert_rating_account_2($user['rating_mode'],$user['rating_account'],$billing_account_id,$re_bill_plan_id,3,3);
 	
-	$racc_check_flag = 1;
-	goto racc_check;
+	    $racc_check_flag = 1;
+	    goto racc_check;
     }
 
-    if(($rating_account_id == 0)&&($racc_check_flag))
-    {
-	hpvp_put_syslog(LOG_N,"[re_create_account()],A rating_account_id is null!!!");
-	return 0;
+    if(($rating_account_id == 0)&&($racc_check_flag)) {
+	    return 0;
     }
-
-    hpvp_put_syslog(LOG_N,"[re_create_account()],bacc_id: $billing_account_id");
 
     // Insert PCard
     if($billing_account_id) {
-	if(empty($user['start_date'])) $user['start_date'] = date("Y-m-d");
+	    if(empty($user['start_date'])) $user['start_date'] = date("Y-m-d");
 	
-	if(!empty($user['pcard_status'])) $pcard_status_id = re_get_pcard_status_id($user['pcard_status']);
-	else $pcard_status_id = 2;
+	    if(!empty($user['pcard_status'])) $pcard_status_id = re_get_pcard_status_id($user['pcard_status']);
+	    else $pcard_status_id = 2;
 	
-	if(!empty($user['pcard_type'])) {
-	    $pcard_type_id = re_get_pcard_type_id($user['pcard_type']);
-	} else $pcard_type_id = 2;
+	    if(!empty($user['pcard_type'])) {
+	        $pcard_type_id = re_get_pcard_type_id($user['pcard_type']);
+	    } else $pcard_type_id = 2;
 	
-	if($pcard_type_id) {
-	    $pcard_id = re_get_pcard_id_2($billing_account_id);
-	    if(($pcard_type_id == 2)AND($pcard_id > 0)) goto chk_call_number;
-	
-	    hpvp_put_syslog(LOG_N,"[re_create_account()],pcard_id: $pcard_id");
-	
-	    if((re_get_pcard_id($billing_account_id,$pcard_type_id,$pcard_status_id,$user['amount'],$user['start_date'],$user['end_date'])) == 0) {
-		re_insert_pcard($billing_account_id,$pcard_type_id,$pcard_status_id,$user['amount'],$user['start_date'],$user['end_date']);
-	    } else {
-		chk_call_number:
-		$bacc_num = re_get_bacc_num_clg($billing_account_id);
+	    if($pcard_type_id) {
+	        $pcard_id = re_get_pcard_id_2($billing_account_id);
+	        if(($pcard_type_id == 2)AND($pcard_id > 0)) goto chk_call_number;
 		
-		if($bacc_num > 1) re_update_pcard_call_number($pcard_id,$bacc_num);
+	        if((re_get_pcard_id($billing_account_id,$pcard_type_id,$pcard_status_id,$user['amount'],$user['start_date'],$user['end_date'])) == 0) {
+		        re_insert_pcard($billing_account_id,$pcard_type_id,$pcard_status_id,$user['amount'],$user['start_date'],$user['end_date']);
+	        } else {
+            chk_call_number:
+		        $bacc_num = re_get_bacc_num_clg($billing_account_id);
 		
-		hpvp_put_syslog(LOG_N,"[re_create_account()],bacc_num : $bacc_num");
+		        if($bacc_num > 1) re_update_pcard_call_number($pcard_id,$bacc_num);
+	        }
 	    }
-	}
     }
 
-    end_func:
+end_func:
     return array('re_bacc_id' => $billing_account_id , 're_racc_id' => $rating_account_id);
 }
 ?>
